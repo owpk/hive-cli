@@ -1,0 +1,46 @@
+plugins {
+    id("groovy")
+    id("com.github.johnrengelman.shadow") version "6.1.0"
+    id("io.micronaut.application") version "1.4.2"
+}
+
+version = "0.1"
+group = "org.owpk"
+
+repositories {
+    mavenCentral()
+}
+
+micronaut {
+    testRuntime("spock2")
+    processing {
+        incremental(true)
+        annotations("org.owpk.*")
+    }
+}
+
+dependencies {
+    annotationProcessor("org.projectlombok:lombok")
+    annotationProcessor("info.picocli:picocli-codegen")
+    implementation("info.picocli:picocli")
+    implementation("io.micronaut:micronaut-http-client")
+    implementation("io.micronaut:micronaut-runtime")
+    implementation("io.micronaut.picocli:micronaut-picocli")
+    implementation("javax.annotation:javax.annotation-api")
+    compileOnly("org.projectlombok:lombok")
+    compileOnly("org.graalvm.nativeimage:svm")
+    implementation("io.micronaut:micronaut-validation")
+    runtimeOnly("ch.qos.logback:logback-classic")
+}
+
+
+application {
+    mainClass.set("org.owpk.HiveCliCommand")
+}
+java {
+    sourceCompatibility = JavaVersion.toVersion("11")
+    targetCompatibility = JavaVersion.toVersion("11")
+}
+
+
+
