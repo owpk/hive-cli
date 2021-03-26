@@ -1,3 +1,15 @@
 micronaut:
   application:
     name: hiveCli
+  http:
+    client:
+      logger-name: httpClientLogger
+    services:
+      other-client:
+        logger-name: other.client
+hive:
+  config: .hive-cli
+  api:
+    url: https://api2.hiveos.farm/api/v2
+  token:
+    location: /.hive-cli/credentials.properties

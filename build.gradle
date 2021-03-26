@@ -9,15 +9,10 @@ group = "org.owpk"
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
-micronaut {
-    testRuntime("spock2")
-    processing {
-        incremental(true)
-        annotations("org.owpk.*")
-    }
-}
+mainClassName = "org.owpk.HiveCliCommand"
 
 dependencies {
     annotationProcessor("org.projectlombok:lombok")
@@ -30,17 +25,46 @@ dependencies {
     compileOnly("org.projectlombok:lombok")
     compileOnly("org.graalvm.nativeimage:svm")
     implementation("io.micronaut:micronaut-validation")
+    compileOnly(platform("io.micronaut:micronaut-bom:$micronautVersion"))
     runtimeOnly("ch.qos.logback:logback-classic")
+    compile 'org.owpk:json-flatmap-core:1.0'
+    compile 'org.owpk:json-flatmap-annotations:1.0'
 }
 
-
-application {
-    mainClass.set("org.owpk.HiveCliCommand")
+shadowJar {
+    mergeServiceFiles()
 }
+
+configurations {
+    // for dependencies that are needed for development only
+    developmentOnly
+}
+
 java {
     sourceCompatibility = JavaVersion.toVersion("11")
     targetCompatibility = JavaVersion.toVersion("11")
 }
 
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+    options.compilerArgs.addAll([
+            '-parameters',
+            // enables incremental compilation
+            '-Amicronaut.processing.incremental=true',
+            '-Amicronaut.processing.annotations=org.owpk.*',
+            "-Amicronaut.processing.group=$project.group",
+            "-Amicronaut.processing.module=$project.name",
+    ])
+}
 
-
+tasks.withType(JavaExec) {
+    classpath += configurations.developmentOnly
+    jvmArgs('-XX:TieredStopAtLevel=1', '-Dcom.sun.management.jmxremote')
+    if (gradle.startParameter.continuous) {
+        systemProperties(
+                'micronaut.io.watch.restart':'true',
+                'micronaut.io.watch.enabled':'true',
+                "micronaut.io.watch.paths":"src/main"
+        )
+    }
+}

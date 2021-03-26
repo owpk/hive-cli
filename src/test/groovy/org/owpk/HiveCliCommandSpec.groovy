@@ -15,16 +15,16 @@ class HiveCliCommandSpec extends Specification {
 
     @Shared @AutoCleanup ApplicationContext ctx = ApplicationContext.run(Environment.CLI, Environment.TEST)
 
-    void "test hive-cli with command line option"() {
-        given:
-        ByteArrayOutputStream baos = new ByteArrayOutputStream()
-        System.setOut(new PrintStream(baos))
-
-        String[] args = ['-v'] as String[]
-        PicocliRunner.run(HiveCliCommand, ctx, args)
-
-        expect:
-        baos.toString().contains('Hi!')
-    }
+//    void "test hive-cli with command line option"() {
+//        given:
+//        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+//        System.setOut(new PrintStream(baos))
+//
+//        String[] args = ['-v'] as String[]
+//        PicocliRunner.run(HiveCliCommand, ctx, args)
+//
+//        expect:
+//        baos.toString().contains('Hi!')
+//    }
 }
 
