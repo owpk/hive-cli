@@ -1,5 +1,4 @@
-plugins {
-    id("groovy")
+plugins { id("groovy")
     id("com.github.johnrengelman.shadow") version "6.1.0"
     id("io.micronaut.application") version "1.4.2"
 }
@@ -29,6 +28,10 @@ dependencies {
     runtimeOnly("ch.qos.logback:logback-classic")
     compile 'org.owpk:json-flatmap-core:1.0'
     compile 'org.owpk:json-flatmap-annotations:1.0'
+    testImplementation("org.spockframework:spock-core") {
+        exclude group: "org.codehaus.groovy", module: "groovy-all"
+    }
+    testImplementation("io.micronaut.test:micronaut-test-spock")
 }
 
 shadowJar {
@@ -43,6 +46,10 @@ configurations {
 java {
     sourceCompatibility = JavaVersion.toVersion("11")
     targetCompatibility = JavaVersion.toVersion("11")
+}
+
+test {
+    useJUnitPlatform()
 }
 
 tasks.withType(JavaCompile) {

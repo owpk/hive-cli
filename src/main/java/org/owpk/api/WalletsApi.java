@@ -18,7 +18,7 @@ public interface WalletsApi {
 
     @Get("/farms/{farmId}/wallets")
     @Consumes(MediaType.APPLICATION_JSON)
-    HttpResponse<ApiResponse<WalletsJ>> getWalletsList(@PathVariable("farmId") Long farmId);
+    HttpResponse<JsonNode> getWalletsList(@PathVariable("farmId") Long farmId);
 
     @Get("/farms/{farmId}/wallets/{walletId}")
     @Consumes(MediaType.APPLICATION_JSON)

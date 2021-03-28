@@ -11,7 +11,7 @@ public class ObjectMapperFactory {
 
     @Bean
     @Singleton
-    public ObjectMapper getObjectMapperInstance() {
+    public ObjectMapper getObjectMapper() {
         return new ObjectMapper();
     }
 }
