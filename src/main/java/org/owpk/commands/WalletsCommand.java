@@ -1,14 +1,20 @@
 package org.owpk.commands;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.oracle.svm.hosted.dashboard.ToJson;
 import io.micronaut.context.annotation.Parameter;
 import lombok.SneakyThrows;
 import org.owpk.api.WalletsApi;
 import org.owpk.domain.ApiResponse;
 import org.owpk.domain.wallet.WalletsJ;
+import org.owpk.jsondataextruder.DefinitionConfig;
+import org.owpk.jsondataextruder.JsonFlatmap;
 import picocli.CommandLine.Command;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
 
 @Command(name = "wal",
         description = "Get info about all wallets tied to account\n\tDefault api endpoint: /wallets")
@@ -42,10 +48,26 @@ public class WalletsCommand extends BaseCommand implements Runnable {
         executeResult(response, WalletsJ.class);
     }
 
-    @SneakyThrows
     @Override
     public void run() {
         var response = api.getWalletsList();
-        executeResult(response, ApiResponse.class);
+
+        var cfg = new DefinitionConfig(WalletsJ.class);
+        var poolBalanceCfg = new DefinitionConfig("pool_balances");
+        poolBalanceCfg.addFieldsToShow("status");
+        cfg.setObjects(List.of(poolBalanceCfg));
+        cfg.addFieldsToShow("id", "coin");
+
+        var array = response.body().get("data");
+        List<WalletsJ> walletsJS = new ArrayList<>();
+        var iterator = array.elements();
+        while (iterator.hasNext()) {
+            var val = objectMapper.convertValue(iterator.next(), WalletsJ.class);
+            walletsJS.add(val);
+        }
+        walletsJS.forEach(x -> {
+            var flat = JsonFlatmap.flatmap(x, cfg);
+            System.out.println(flat);
+        });
     }
 }

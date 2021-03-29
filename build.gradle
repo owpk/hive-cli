@@ -26,8 +26,8 @@ dependencies {
     implementation("io.micronaut:micronaut-validation")
     compileOnly(platform("io.micronaut:micronaut-bom:$micronautVersion"))
     runtimeOnly("ch.qos.logback:logback-classic")
-    compile 'org.owpk:json-flatmap-core:1.0'
-    compile 'org.owpk:json-flatmap-annotations:1.0'
+    compile 'org.owpk:json-flatmap-core:1.1'
+    compile 'org.owpk:json-flatmap-annotations:1.1'
     testImplementation("org.spockframework:spock-core") {
         exclude group: "org.codehaus.groovy", module: "groovy-all"
     }

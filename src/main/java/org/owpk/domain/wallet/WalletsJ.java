@@ -15,6 +15,7 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Introspected
 @ToString
+@ObjectName(name = "wallet")
 public class WalletsJ {
 
     private Long id;
