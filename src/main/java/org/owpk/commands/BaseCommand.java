@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Multimap;
 import io.micronaut.http.HttpResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.owpk.domain.ApiResponse;
+import org.owpk.domain.wallet.WalletsJ;
 import org.owpk.exception.ApplicationException;
 import org.owpk.jsondataextruder.DefinitionConfig;
 import org.owpk.jsondataextruder.JsonFlatmap;
@@ -14,6 +14,7 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -42,31 +43,16 @@ public class BaseCommand {
     ObjectMapper objectMapper;
 
     @SuppressWarnings("ConstantConditions")
-    public <T> void executeResult(HttpResponse<JsonNode> response, Class<T> targetClass) {
+    protected void checkForSuccessHttpStatus(HttpResponse<JsonNode> response) {
         if (response == null || response.body() == null || response.body().isEmpty()) {
             var msg = "No response from server";
             log.error(msg + " : response %s", response);
             throw new ApplicationException(msg);
         }
-        var startConfig = new DefinitionConfig(targetClass);
-        var body = response.body();
-        if (definitionMap == null && show == null && file == null)
-            System.out.println(body.toPrettyString());
-        else {
-            var config = parseConfig(startConfig);
-//            executeWithDefinitionConfig(body, config);
-        }
     }
 
-    protected <T> T convert(JsonNode node, Class<T> clazz) {
-        return objectMapper.convertValue(node, clazz);
-    }
-
-    private <T> void executeWithDefinitionConfig(DefinitionConfig defConfig, List<T> list) {
-        Multimap<String, String> result;
-        result = JsonFlatmap.flatmap(list, defConfig);
-        result.entries().forEach(
-                x -> System.out.printf(format, x.getKey(), x.getValue()));
+    protected void printResult(Multimap<String,String> map) {
+        map.entries().forEach((k) -> System.out.printf(format, k.getKey(), k.getValue()));
     }
 
     public DefinitionConfig parseConfig(DefinitionConfig config) {
@@ -87,6 +73,17 @@ public class BaseCommand {
             }
         }
         return config;
+    }
+
+    public void executeListOfResponseEntities(HttpResponse<JsonNode> response, DefinitionConfig cfg) {
+        var node = getJsonNodeFromHttpBody(response, "data");
+        List<WalletsJ> list = convertNodeToEntitiesList(WalletsJ.class, node);
+        var result = JsonFlatmap.flatmap(list, cfg);
+        printResult(result);
+    }
+
+    public void executeSingleResponseEntity(HttpResponse<JsonNode> response, DefinitionConfig cfg) {
+
     }
 
     private void checkForInput() {
@@ -126,5 +123,20 @@ public class BaseCommand {
     private void parseRequestedFilter(DefinitionConfig config) {
         var empty = new String[0];
         var fields_ = definitionMap.get("filter");
+    }
+
+    protected JsonNode getJsonNodeFromHttpBody(HttpResponse<JsonNode> response, String fieldName) {
+        checkForSuccessHttpStatus(response);
+        return response.body().get(fieldName);
+    }
+
+    protected <T> List<T> convertNodeToEntitiesList(Class<T> clazz, JsonNode node) {
+        List<T> list = new ArrayList<>();
+        var iterator = node.elements();
+        while (iterator.hasNext()) {
+            var val = objectMapper.convertValue(iterator.next(), clazz);
+            list.add(val);
+        }
+        return list;
     }
 }

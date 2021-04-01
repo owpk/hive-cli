@@ -31,21 +31,19 @@ public class WalletsCommand extends BaseCommand implements Runnable {
             subcommands = {BaseCommand.class})
     public void getWalletsFarmList(@Parameter Long farmId) throws Exception {
         var response = api.getWalletsList(farmId);
-        executeResult(response, ApiResponse.class);
     }
 
     @Command(name = "farm-info", description = "Get info about specific wallet tied to specific farm\n" +
             "Endpoint: /farms/{farmId}/wallets/{walletId}")
     public void getWalletInfo(@Parameter Long farmId, @Parameter Long walletId) {
         var response = api.getWalletInfo(farmId, walletId);
-        executeResult(response, WalletsJ.class);
     }
 
     @Command(name = "info", description = "Get info about specific wallet\n" +
             "Endpoint: /wallets/{walletId}")
     public void getWalletInfo(@Parameter Long farmId) {
         var response = api.getWalletInfo(farmId);
-        executeResult(response, WalletsJ.class);
+        executeSingleResponseEntity(response, DefinitionConfig.DEFAULT);
     }
 
     @Override
@@ -57,17 +55,6 @@ public class WalletsCommand extends BaseCommand implements Runnable {
         poolBalanceCfg.addFieldsToShow("status");
         cfg.setObjects(List.of(poolBalanceCfg));
         cfg.addFieldsToShow("id", "coin");
-
-        var array = response.body().get("data");
-        List<WalletsJ> walletsJS = new ArrayList<>();
-        var iterator = array.elements();
-        while (iterator.hasNext()) {
-            var val = objectMapper.convertValue(iterator.next(), WalletsJ.class);
-            walletsJS.add(val);
-        }
-        walletsJS.forEach(x -> {
-            var flat = JsonFlatmap.flatmap(x, cfg);
-            System.out.println(flat);
-        });
+        executeListOfResponseEntities(response, cfg);
     }
 }
