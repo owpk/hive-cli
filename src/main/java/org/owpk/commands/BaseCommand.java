@@ -75,15 +75,23 @@ public class BaseCommand {
         return config;
     }
 
-    public void executeListOfResponseEntities(HttpResponse<JsonNode> response, DefinitionConfig cfg) {
-        var node = getJsonNodeFromHttpBody(response, "data");
-        List<WalletsJ> list = convertNodeToEntitiesList(WalletsJ.class, node);
+    public <T> void executeListOfResponseEntities(HttpResponse<JsonNode> response, DefinitionConfig cfg, Class<T> clazz) {
+        executeListOfResponseEntities(response, cfg, clazz, "data");
+    }
+
+    public <T> void executeListOfResponseEntities(HttpResponse<JsonNode> response, DefinitionConfig cfg, Class<T> clazz, String withField) {
+        var node = getJsonNodeFromHttpBody(response, withField);
+        List<T> list = convertNodeToEntitiesList(clazz, node);
         var result = JsonFlatmap.flatmap(list, cfg);
         printResult(result);
     }
 
-    public void executeSingleResponseEntity(HttpResponse<JsonNode> response, DefinitionConfig cfg) {
-
+    public void executeSingleResponseEntity(HttpResponse<JsonNode> response, DefinitionConfig cfg, Class<?> clazz) {
+        checkForSuccessHttpStatus(response);
+        var node = response.body();
+        var converted = objectMapper.convertValue(node, clazz);
+        var flatted = JsonFlatmap.flatmap(converted, cfg);
+        printResult(flatted);
     }
 
     private void checkForInput() {
